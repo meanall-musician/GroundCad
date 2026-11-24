@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "groundcad",
+  "name": "ground-cad",
   "compatibility_date": "2026-01-01",
   "assets": { "directory": "./site" },
   "routes": [{ "pattern": "groundcad.g2b.pl", "custom_domain": true }]

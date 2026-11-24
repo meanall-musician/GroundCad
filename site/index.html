@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GroundCAD</title>
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#15191d">
 <style>
   :root{
     --bg: #14171a;
@@ -32,8 +36,11 @@
   }
   #toolbar.collapsed{width:0;border-right-width:0;}
   .side-inner{width:var(--side-w);height:100%;display:flex;flex-direction:column;}
-  .side-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:14px 14px 8px;}
+  .side-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 14px 8px;}
   .side-head h1{font-size:15px;letter-spacing:.04em;margin:0 0 2px;color:var(--text);font-weight:700;}
+  .brand-ico{border-radius:7px;flex:none;}
+  .brand-txt{flex:1;min-width:0;}
+  .side-head h1 .ver{font-size:10px;font-weight:600;color:var(--accent);font-family:var(--mono);margin-left:4px;vertical-align:middle;}
   .side-head .sub{font-size:11px;color:var(--text-dim);font-family:var(--mono);}
   #sections{flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 14px 8px;}
   .side-foot{
@@ -227,8 +234,9 @@
   <aside id="toolbar">
     <div class="side-inner">
       <div class="side-head">
-        <div>
-          <h1>GroundCAD</h1>
+        <img class="brand-ico" src="icon-32.png" srcset="icon-32.png 1x, apple-touch-icon.png 2x" width="32" height="32" alt="">
+        <div class="brand-txt">
+          <h1>GroundCAD <span class="ver" id="appVer" title="Wersja (build)">v1.0</span></h1>
           <div class="sub">obrys + podział + m² na żywo</div>
         </div>
         <button id="btnHidePanel" class="iconbtn" title="Schowaj panel" aria-label="Schowaj panel"><svg><use href="#i-panel"/></svg></button>
@@ -394,7 +402,7 @@
 <div class="modal-backdrop" id="aboutBackdrop" hidden>
   <div class="modal about-modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
     <button type="button" class="about-x" id="aboutClose" aria-label="Zamknij">✕</button>
-    <h3 id="aboutTitle">O programie — GroundCAD</h3>
+    <h3 id="aboutTitle">O programie — GroundCAD <span id="aboutVer" style="font-size:11px;color:var(--accent);font-family:var(--mono)"></span></h3>
     <p style="margin-bottom:12px">Proste narzędzie online do obrysowywania działki, dzielenia jej na pola i liczenia powierzchni w m² w czasie rzeczywistym.</p>
     <div class="about-box">
       © Copyright 2026 <a href="https://www.g2b.pl" target="_blank" rel="noopener">G2B</a> | Patryk Gust<br>
@@ -1839,6 +1847,7 @@ const ABOUT = {
   ['mouseenter','focus','touchstart'].forEach(ev=>a.addEventListener(ev, reveal, {passive:true}));
   a.addEventListener('click', (e)=>{ if(a.getAttribute('href')==='#'){ e.preventDefault(); reveal(); location.href = a.href; } });
   holder.appendChild(a);
+  $('aboutVer').textContent = $('appVer').textContent;
 
   let tsId = null, tsToken = '', tsLoading = false;
   const isHttp = /^https?:$/.test(location.protocol);
