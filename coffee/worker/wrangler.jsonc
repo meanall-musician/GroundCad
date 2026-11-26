@@ -1,0 +1,6 @@
+{
+  "name": "g2b-pay",
+  "main": "worker.js",
+  "compatibility_date": "2026-01-01",
+  "routes": [{ "pattern": "pay.g2b.pl", "custom_domain": true }]
+}

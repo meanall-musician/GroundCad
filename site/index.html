@@ -96,7 +96,7 @@
   button.danger:hover{border-color:#e05c5c;color:#e05c5c;}
   button.primary{background:var(--accent);color:#1a1005;border-color:var(--accent);font-weight:600;}
   button.primary:hover{filter:brightness(1.08);}
-  select,input[type=text],input[type=number]{
+  select,input[type=text],input[type=number],input[type=email],textarea{
     width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--line);
     border-radius:4px;padding:7px 8px;font-size:12.5px;font-family:var(--mono);margin-bottom:6px;
   }
@@ -199,7 +199,16 @@
   .modal p{margin:0 0 16px;font-size:13px;line-height:1.55;color:var(--text-dim);}
   .about-modal{width:min(560px,100%);max-height:92vh;overflow:auto;position:relative;}
   .about-x{position:absolute;top:10px;right:10px;width:30px;height:30px;padding:0;margin:0;text-align:center;line-height:1;font-size:18px;}
-  .about-box{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:0 0 14px;font-size:13px;line-height:1.6;color:var(--text-dim);}
+  .about-head{display:flex;gap:16px;align-items:center;margin:0 28px 14px 0;}
+  .about-logo{border-radius:18px;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.4);}
+  .about-kicker{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);font-family:var(--mono);}
+  .about-head h3{margin:2px 0 4px;font-size:22px;} .about-head h3 span{font-size:12px;color:var(--accent);font-family:var(--mono);font-weight:600;}
+  .about-head p{margin:0;font-size:12.5px;line-height:1.5;color:var(--text-dim);}
+  .about-links{margin-top:4px;} .about-sep{margin:0 14px;color:var(--text-dim);opacity:.6;}
+  .about-cta{display:block;width:100%;margin:0;background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 0 6px;text-align:center;font-size:16px;font-weight:700;color:var(--accent-2);cursor:pointer;}
+  .about-cta:hover{text-decoration:underline;border-color:var(--line);} .about-cta::after{content:' ▾';font-size:12px;} .about-cta[aria-expanded=true]::after{content:' ▴';}
+  .about-form[hidden]{display:none;}
+  .about-box{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:0 0 14px;font-size:13px;line-height:1.6;color:var(--text-dim);text-align:center;}
   .about-box a,.about-modal a{color:var(--accent-2);font-weight:600;text-decoration:none;}
   .about-box a:hover,.about-modal a:hover{text-decoration:underline;}
   .about-form label{display:block;font-size:12px;color:var(--text-dim);margin:8px 0 3px;}
@@ -236,7 +245,7 @@
       <div class="side-head">
         <img class="brand-ico" src="icon-32.png" srcset="icon-32.png 1x, apple-touch-icon.png 2x" width="32" height="32" alt="">
         <div class="brand-txt">
-          <h1>GroundCAD <span class="ver" id="appVer" title="Wersja (build)">v1.0</span></h1>
+          <h1>GroundCAD <span class="ver" id="appVer" title="Wersja (build)">v1.1</span></h1>
           <div class="sub">obrys + podział + m² na żywo</div>
         </div>
         <button id="btnHidePanel" class="iconbtn" title="Schowaj panel" aria-label="Schowaj panel"><svg><use href="#i-panel"/></svg></button>
@@ -402,15 +411,21 @@
 <div class="modal-backdrop" id="aboutBackdrop" hidden>
   <div class="modal about-modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
     <button type="button" class="about-x" id="aboutClose" aria-label="Zamknij">✕</button>
-    <h3 id="aboutTitle">O programie — GroundCAD <span id="aboutVer" style="font-size:11px;color:var(--accent);font-family:var(--mono)"></span></h3>
-    <p style="margin-bottom:12px">Proste narzędzie online do obrysowywania działki, dzielenia jej na pola i liczenia powierzchni w m² w czasie rzeczywistym.</p>
-    <div class="about-box">
-      © Copyright 2026 <a href="https://www.g2b.pl" target="_blank" rel="noopener">G2B</a> | Patryk Gust<br>
-      WWW: <a href="https://www.g2b.pl" target="_blank" rel="noopener">www.g2b.pl</a><br>
-      E-mail: <span id="aboutMail"></span>
+    <div class="about-head">
+      <img src="apple-touch-icon.png" width="84" height="84" alt="GroundCAD" class="about-logo">
+      <div class="about-head-txt">
+        <div class="about-kicker">O programie</div>
+        <h3 id="aboutTitle">GroundCAD <span id="aboutVer"></span></h3>
+        <p>Proste narzędzie online do obrysowywania działki, dzielenia jej na pola i liczenia powierzchni w m² w czasie rzeczywistym.</p>
+      </div>
     </div>
-    <form class="about-form" id="aboutForm" novalidate>
-      <strong style="font-size:13px">Napisz do nas</strong>
+    <div class="about-box">
+      <div>© Copyright 2026 <a href="https://www.g2b.pl" target="_blank" rel="noopener">G2B</a> | Patryk Gust</div>
+      <div class="about-links"><a href="https://www.g2b.pl" target="_blank" rel="noopener">www.g2b.pl</a><span class="about-sep">|</span><span id="aboutMail"></span></div>
+    </div>
+    <div id="aboutCoffee" data-buy-coffee data-app="groundcad"></div>
+    <button type="button" class="about-cta" id="cfToggle" aria-expanded="false" aria-controls="aboutForm">Masz pytania, uwagi? Skontaktuj się!</button>
+    <form class="about-form" id="aboutForm" novalidate hidden>
       <label for="cfName">Imię</label><input type="text" id="cfName" maxlength="100" autocomplete="name">
       <label for="cfEmail">Twój e-mail</label><input type="email" id="cfEmail" maxlength="200" autocomplete="email">
       <label for="cfSubject">Temat</label><input type="text" id="cfSubject" maxlength="150">
@@ -430,6 +445,7 @@
   </div>
 </div>
 
+<script src="buy-coffee.js"></script>
 <script>
 const cv = document.getElementById('cv');
 let ctx = cv.getContext('2d');
@@ -1848,6 +1864,7 @@ const ABOUT = {
   a.addEventListener('click', (e)=>{ if(a.getAttribute('href')==='#'){ e.preventDefault(); reveal(); location.href = a.href; } });
   holder.appendChild(a);
   $('aboutVer').textContent = $('appVer').textContent;
+  const form = $('aboutForm');
 
   let tsId = null, tsToken = '', tsLoading = false;
   const isHttp = /^https?:$/.test(location.protocol);
@@ -1863,12 +1880,17 @@ const ABOUT = {
     document.head.appendChild(sc);
   }
   const close = ()=>{ $('aboutBackdrop').hidden = true; };
-  $('btnAbout').onclick = ()=>{
-    $('aboutBackdrop').hidden = false;
-    if(!isHttp) status('Formularz działa tylko po otwarciu strony z serwera (nie z pliku).','err');
-    else loadTurnstile();
-    setTimeout(()=>$('aboutClose').focus(),0);
+  const openAbout = ()=>{ $('aboutBackdrop').hidden = false; setTimeout(()=>$('aboutClose').focus(),0); };
+  $('btnAbout').onclick = openAbout;
+  $('cfToggle').onclick = ()=>{
+    const open = form.hidden;
+    form.hidden = !open; $('cfToggle').setAttribute('aria-expanded', String(open));
+    if(open){
+      if(!isHttp) status('Formularz działa tylko po otwarciu strony z serwera (nie z pliku).','err'); else loadTurnstile();
+      setTimeout(()=>$('cfName').focus(),0);
+    }
   };
+  openAbout();   // modal pokazuje się przy każdym wejściu na stronę (bez cookies)
   $('aboutClose').onclick = close;
   $('aboutBackdrop').addEventListener('mousedown', e=>{ if(e.target===$('aboutBackdrop')) close(); });
   window.addEventListener('keydown', e=>{ if(e.key==='Escape' && !$('aboutBackdrop').hidden && $('modalBackdrop').hidden){ e.stopPropagation(); close(); } }, true);
