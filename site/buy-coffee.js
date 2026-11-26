@@ -1,7 +1,7 @@
 /*! buy-coffee.js — reusable "Postaw mi kawę" widget (G2B). Vanilla JS, no dependencies.
  *  Usage:  <div data-buy-coffee data-app="groundcad"></div>  +  <script src="buy-coffee.js"></script>
  *  or:     BuyCoffee.mount(el, {app:'groundcad', endpoint:'https://pay.g2b.pl/', lang:'pl'})
- *  Options (data-* attributes or object): app, endpoint (payment worker URL), fallbackUrl (e.g. buycoffee.to link),
+ *  Options (data-* attributes or object): providers ("p24,paynow" — operator choice shown when >1; must be enabled in the worker), app, endpoint (payment worker URL), fallbackUrl (e.g. buycoffee.to link),
  *  price (PLN per coffee, default 9.99), presets ("1,5,10,100"), lang (pl|en), askEmail (true|false), returnUrl.
  *  Without endpoint/fallbackUrl the button is disabled ("coming soon"). Colors come from CSS vars
  *  --accent, --text, --text-dim, --line, --panel (with fallbacks) so it fits any host app. */
@@ -10,9 +10,11 @@
   var T = {
     pl:{title:'Postaw mi kawę',txt:'Aplikacja jest darmowa i bez reklam. Dobrowolna wpłata pomaga pokryć koszty serwera i domeny oraz dalszy rozwój. Dziękuję!',
       cups:['kawa','kawy','kaw'],total:'Razem',btn:'Postaw kawę',soon:'Płatności wkrótce',email:'Twój e-mail (potrzebny operatorowi płatności)',
+      method:'Metoda płatności',pn:{p24:'Przelewy24',paynow:'Paynow',stripe:'Stripe'},
       note:'Płatność obsługuje zewnętrzny operator (BLIK, przelew, karta).',busy:'Łączenie z bramką płatności…',err:'Nie udało się rozpocząć płatności. Spróbuj ponownie.',badmail:'Podaj poprawny e-mail.',slider:'Liczba kaw'},
     en:{title:'Buy me a coffee',txt:'This app is free and ad-free. A voluntary tip helps cover server and domain costs and further development. Thank you!',
       cups:['coffee','coffees','coffees'],total:'Total',btn:'Buy a coffee',soon:'Payments coming soon',email:'Your e-mail (required by the payment provider)',
+      method:'Payment method',pn:{p24:'Przelewy24',paynow:'Paynow',stripe:'Stripe'},
       note:'Payment is handled by an external provider (BLIK, bank transfer, card).',busy:'Connecting to the payment gateway…',err:'Could not start the payment. Please try again.',badmail:'Enter a valid e-mail.',slider:'Number of coffees'}
   };
   var css = '.bc{border:1px solid var(--line,#2c343b);border-radius:10px;padding:12px 14px;margin:0 0 14px;color:var(--text,#e6e9ec);font-size:13px;line-height:1.5}'+
@@ -20,6 +22,7 @@
   '.bc-chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}'+
   '.bc-chip{width:auto!important;margin:0!important;padding:5px 11px!important;border-radius:999px!important;font-size:12px;cursor:pointer;text-align:center}'+
   '.bc-chip[aria-pressed=true]{border-color:var(--accent,#ff8a3d)!important;color:var(--accent,#ff8a3d)}'+
+  '.bc-sel{width:100%;margin:0 0 8px;background:var(--panel-2,#1b2126);color:var(--text,#e6e9ec);border:1px solid var(--line,#2c343b);border-radius:4px;padding:7px 8px}'+
   '.bc-range{width:100%;accent-color:var(--accent,#ff8a3d);margin:4px 0 6px}'+
   '.bc-sum{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px}.bc-amt{font-size:20px;font-weight:700;color:var(--accent,#ff8a3d)}'+
   '.bc-mail{width:100%;margin:0 0 8px;background:var(--panel-2,#1b2126);color:var(--text,#e6e9ec);border:1px solid var(--line,#2c343b);border-radius:4px;padding:7px 8px}.bc-go{width:100%!important;text-align:center;font-weight:700;margin:0!important;cursor:pointer}'+
@@ -34,7 +37,9 @@
     var price=parseFloat(o.price||ds.price||9.99), app=o.app||ds.app||location.hostname;
     var presets=String(o.presets||ds.presets||'1,5,10,100').split(',').map(Number).filter(function(n){return n>=1&&n<=100;});
     var endpoint=o.endpoint||ds.endpoint||'', fallback=o.fallbackUrl||ds.fallbackUrl||'';
-    var askEmail=String(o.askEmail!=null?o.askEmail:(ds.askEmail||'false'))==='true';
+    var providers=String(o.providers||ds.providers||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+    var needMail={p24:1,paynow:1};   // Stripe zbiera e-mail sam
+    var askEmail=o.askEmail!=null||ds.askEmail?String(o.askEmail!=null?o.askEmail:ds.askEmail)==='true':providers.length===0||providers.some(function(x){return needMail[x];});
     var fmt=function(v){ return v.toFixed(2).replace('.',',')+(lang==='pl'?' zł':' PLN'); };
     var n=presets[0]||1;
     host.textContent=''; var box=el('div','bc'); host.appendChild(box);
@@ -42,6 +47,7 @@
     var chips=el('div','bc-chips'); box.appendChild(chips);
     var range=el('input','bc-range'); range.type='range'; range.min=0; range.max=100; range.step=1; range.setAttribute('aria-label',t.slider); box.appendChild(range);
     var sum=el('div','bc-sum'), lab=el('span'), amt=el('span','bc-amt'); sum.appendChild(lab); sum.appendChild(amt); box.appendChild(sum);
+    var sel=null; if(providers.length>1){ sel=el('select','bc-sel'); sel.setAttribute('aria-label',t.method); providers.forEach(function(id){ var op=el('option',null,t.pn[id]||id); op.value=id; sel.appendChild(op); }); box.appendChild(sel); }
     var mail=null; if(askEmail){ mail=el('input','bc-mail'); mail.type='email'; mail.placeholder=t.email; mail.autocomplete='email'; mail.maxLength=200; box.appendChild(mail); }
     var go=el('button','bc-go'); go.type='button'; box.appendChild(go);
     var st=el('div','bc-st'); st.setAttribute('role','status'); box.appendChild(st);
@@ -59,9 +65,10 @@
     go.addEventListener('click',function(){
       st.textContent='';
       if(!endpoint){ if(fallback) window.open(fallback,'_blank','noopener'); return; }
-      var email=mail?mail.value.trim():''; if(mail&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ st.textContent=t.badmail; return; }
+      var prov=sel?sel.value:(providers[0]||''); var needsMail=prov?!!needMail[prov]:true;
+      var email=mail?mail.value.trim():''; if(mail&&needsMail&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ st.textContent=t.badmail; return; }
       go.disabled=true; st.style.color=''; st.textContent=t.busy;
-      fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({app:app,coffees:n,amount:Math.round(n*price*100),currency:'PLN',email:email,lang:lang,returnUrl:o.returnUrl||location.href.split('#')[0]})})
+      fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({app:app,coffees:n,amount:Math.round(n*price*100),currency:'PLN',provider:prov||undefined,email:email,lang:lang,returnUrl:o.returnUrl||location.href.split('#')[0]})})
         .then(function(r){ return r.json(); })
         .then(function(j){ if(j&&j.url&&/^https:\/\//.test(j.url)){ location.href=j.url; } else throw new Error('bad'); })
         .catch(function(){ st.style.color='#ff7b7b'; st.textContent=t.err; go.disabled=false; });
